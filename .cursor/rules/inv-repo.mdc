@@ -1,5 +1,5 @@
 ---
-description: Use when the user runs `inv` commands, mentions the side repo / extras repo / inveniam-extras, or wants to stage personal/dev files (Cursor rules, Claude config, root Makefile, per-developer container docker-compose.yml). Also use whenever you'd otherwise suggest `git add` for a file under .cursor/, .claude/, .history/, .idea/, INV_README.md, the root Makefile, or apps/ai-service/containers/*/docker-compose.yml — those belong to the side repo, not the main repo.
+description: Use when the user runs `inv` commands, mentions the side repo / extras repo / inveniam-extras, or wants to stage personal/dev files (Cursor rules, Claude config, root Makefile, per-developer container docker-compose.yml). Also use whenever you'd otherwise suggest `git add` for a file under .cursor/, .claude/, .history/, .idea/, .github/README.md, the root Makefile, or apps/ai-service/containers/*/docker-compose.yml — those belong to the side repo, not the main repo.
 alwaysApply: false
 ---
 
@@ -20,7 +20,7 @@ Files that belong to the **side repo** (use `inv`):
 - `.claude/` (Claude Code settings, skills, agents)
 - Root `Makefile`
 - `apps/ai-service/containers/*/docker-compose.yml` (per-developer overrides)
-- `INV_README.md`
+- `.github/README.md` (the side repo's own README, rendered by GitHub)
 - Personal IDE state if added (`.history/`, `.idea/`)
 
 Run `inv ls-files` if unsure. Everything else uses plain `git` against the main repo.
@@ -51,4 +51,4 @@ Run `inv ls-files` if unsure. Everything else uses plain `git` against the main 
 
 ## If `inv` isn't set up
 
-If the alias is missing or `~/.inveniam-extras.git` doesn't exist, point the user to `INV_README.md` → "First-time setup on a new machine". Don't try to set it up silently — walk through the steps.
+If the alias is missing or `~/.inveniam-extras.git` doesn't exist, point the user to `.github/README.md` → "First-time setup on a new machine". Don't try to set it up silently — walk through the steps.

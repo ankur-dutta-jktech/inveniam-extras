@@ -1,6 +1,6 @@
 ---
 name: inv-repo
-description: Use when the user runs `inv` commands, mentions the side repo / extras repo / inveniam-extras, or wants to stage personal/dev files (Cursor rules, Claude config, local Makefile, per-developer docker-compose overrides). Also use whenever you'd otherwise suggest `git add` for a file under `.cursor/`, `.claude/`, `.history/`, `.idea/`, `INV_README.md`, the root `Makefile`, or `apps/ai-service/containers/*/docker-compose.yml` — those belong to the side repo, not the main repo.
+description: Use when the user runs `inv` commands, mentions the side repo / extras repo / inveniam-extras, or wants to stage personal/dev files (Cursor rules, Claude config, local Makefile, per-developer docker-compose overrides). Also use whenever you'd otherwise suggest `git add` for a file under `.cursor/`, `.claude/`, `.history/`, `.idea/`, `.github/README.md`, the root `Makefile`, or `apps/ai-service/containers/*/docker-compose.yml` — those belong to the side repo, not the main repo.
 ---
 
 # inv-repo (inveniam.io side repo)
@@ -20,7 +20,7 @@ Files that belong to the **side repo** (use `inv`):
 - `.claude/` (Claude Code settings, skills, agents)
 - Root `Makefile`
 - `apps/ai-service/containers/*/docker-compose.yml` (per-developer overrides)
-- `INV_README.md`
+- `.github/README.md` (the side repo's own README, rendered by GitHub)
 - Other personal/IDE state if added (`.history/`, `.idea/`)
 
 Run `inv ls-files` if unsure — it lists every path the side repo tracks.
@@ -36,7 +36,7 @@ Everything else uses plain `git` against the main repo.
 5. **Don't suggest `inv` for main-repo paths.** Source code, tests, configs that aren't in the side-repo list belong in the main repo and use plain `git`.
 6. **Untrack with `--cached`.** To stop tracking without deleting from disk: `inv rm --cached <path>` then `inv commit`. Plain `inv rm` would delete the file.
 7. **Pathspecs resolve from the project root** because the alias has `-C` baked in. Tell the user this if they hit a "pathspec did not match" error from a subdirectory — they don't need to `cd`.
-8. **One initial `INV_README.md` exclude.** When setting up a new machine/worktree, the user adds `INV_README.md` to the main repo's `.git/info/exclude` (local-only) so main `git status` doesn't flag it.
+8. **One initial README exclude.** When setting up a new machine/worktree, the user adds `.github/README.md` to the main repo's `.git/info/exclude` (local-only) so main `git status` doesn't flag it (the side repo's README sits under `.github/`, which the main repo otherwise tracks).
 
 ## Common operations
 
@@ -54,8 +54,8 @@ Everything else uses plain `git` against the main repo.
 
 ## Worktrees
 
-Each `git worktree add` of the main repo can have its own side-repo bare clone (e.g. `~/.inveniam-extras-feature-x.git`) with a per-worktree alias (`inv-fx`). Side-repo state is independent per worktree — sync via the GitHub remote with `inv push` / `inv pull`. See `INV_README.md` at the project root for the bootstrap commands.
+Each `git worktree add` of the main repo can have its own side-repo bare clone (e.g. `~/.inveniam-extras-feature-x.git`) with a per-worktree alias (`inv-fx`). Side-repo state is independent per worktree — sync via the GitHub remote with `inv push` / `inv pull`. See `.github/README.md` at the project root for the bootstrap commands.
 
 ## If the user hasn't set up `inv` yet
 
-If `inv` isn't available (alias missing, bare repo missing), point them to `INV_README.md` → "First-time setup on a new machine". Don't try to set it up silently — walk through the steps so they know what's happening.
+If `inv` isn't available (alias missing, bare repo missing), point them to `.github/README.md` → "First-time setup on a new machine". Don't try to set it up silently — walk through the steps so they know what's happening.
