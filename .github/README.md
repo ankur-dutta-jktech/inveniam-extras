@@ -12,6 +12,7 @@ Uses the **dotfiles pattern**: a bare git directory lives outside the project, w
 - `.claude/` — Claude Code settings, agents, skills
 - `Makefile` — local task runner
 - `apps/ai-service/containers/*/docker-compose.yml` — local-dev compose overrides
+- `apps/ai-service/containers/.editorconfig` — personal Python editor rules (overrides not in main repo's root `.editorconfig`)
 - `.github/README.md` — this file
 
 (Run `inv ls-files` for the authoritative list.)
