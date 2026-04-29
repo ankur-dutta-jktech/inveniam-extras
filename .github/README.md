@@ -37,9 +37,16 @@ inv checkout main
 # If any tracked file conflicts with an existing local file, back it up and re-run:
 #   mv .cursor .cursor.bak && inv checkout main
 
-# 5. Tell the main repo to ignore this README locally (it lives under .github/, which the main repo tracks)
-echo ".github/README.md" >> ~/playground/inveniam.io/.git/info/exclude
+# 5. Tell the main repo to ignore side-repo files that sit under main-repo-tracked paths
+cat >> ~/playground/inveniam.io/.git/info/exclude <<'EOF'
+.github/README.md
+apps/ai-service/containers/.editorconfig
+EOF
 ```
+
+> Why these specific paths: the main repo tracks `.github/` (PR templates) and `apps/ai-service/containers/` (per-agent code), so files we drop *inside* those directories show up as untracked in main `git status` unless excluded. Other side-repo paths like `.cursor/`, `.claude/`, the root `Makefile`, and the per-container `docker-compose.yml` files are already covered by the main repo's `.gitignore`, so no exclude entry is needed for them.
+
+> Whenever you add a new side-repo file under a path the main repo doesn't already ignore, append it to `.git/info/exclude` (and to this list, so other machines pick it up on next setup).
 
 ## Setting up an additional worktree
 
@@ -57,7 +64,10 @@ source ~/.zshrc
 
 inv-fx config status.showUntrackedFiles no
 inv-fx checkout main
-echo ".github/README.md" >> $WORKTREE/.git/info/exclude
+cat >> $WORKTREE/.git/info/exclude <<'EOF'
+.github/README.md
+apps/ai-service/containers/.editorconfig
+EOF
 ```
 
 Each worktree has independent side-repo state (you can be on different branches per worktree). Pull/push as needed to sync them through the GitHub remote.
