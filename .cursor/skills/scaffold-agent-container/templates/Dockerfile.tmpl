@@ -1,0 +1,58 @@
+# Builder stage
+FROM python:3.10.12-slim AS builder
+
+WORKDIR /app
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:0.9.9 /uv /usr/local/bin/uv
+
+# Install system dependencies needed for building
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y build-essential && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy all shared packages (build context is monorepo root)
+COPY --chown=inveniam:inveniam shared-packages/ ./shared-packages/
+
+# Copy dependency files
+COPY apps/ai-service/containers/__CONTAINER_NAME__/pyproject.toml apps/ai-service/containers/__CONTAINER_NAME__/
+
+# Install dependencies using uv
+WORKDIR /app/apps/ai-service/containers/__CONTAINER_NAME__
+RUN uv sync --no-dev
+
+# Explicitly build and install path-dependency shared packages into the .venv.
+# Add more `uv build && uv pip install` blocks here when you add new shared-package dependencies.
+WORKDIR /app/shared-packages/agent-core/v1.0.0
+RUN uv build && \
+    uv pip install --no-cache-dir dist/*.whl --python /app/apps/ai-service/containers/__CONTAINER_NAME__/.venv/bin/python
+
+WORKDIR /app/shared-packages/shared-interfaces/v1.0.0
+RUN uv build && \
+    uv pip install --no-cache-dir dist/*.whl --python /app/apps/ai-service/containers/__CONTAINER_NAME__/.venv/bin/python
+
+# Runtime stage
+FROM python:3.10.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y dumb-init && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/apps/ai-service/containers/__CONTAINER_NAME__/.venv /app/apps/ai-service/containers/__CONTAINER_NAME__/.venv
+COPY --from=builder --chown=inveniam:inveniam /app/shared-packages/ /app/shared-packages/
+
+ENV PATH="/app/apps/ai-service/containers/__CONTAINER_NAME__/.venv/bin:$PATH"
+
+RUN groupadd -g 10001 inveniam && useradd -u 10001 -g 10001 -d /home/inveniam inveniam
+RUN mkdir -p /home/inveniam && chown -R inveniam:inveniam /home/inveniam
+
+COPY --chown=inveniam:inveniam apps/ai-service/containers/__CONTAINER_NAME__/src apps/ai-service/containers/__CONTAINER_NAME__/src
+
+USER inveniam
+
+WORKDIR /app/apps/ai-service/containers/__CONTAINER_NAME__
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["python", "src/main.py"]

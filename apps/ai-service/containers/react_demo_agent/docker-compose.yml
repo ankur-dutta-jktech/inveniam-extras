@@ -1,0 +1,61 @@
+services:
+  react-demo-agent:
+    build:
+      context: ../../../../  # monorepo root (shared-packages live here)
+      dockerfile: apps/ai-service/containers/react_demo_agent/Dockerfile
+    image: react-demo-agent:latest
+    container_name: react-demo-agent
+    restart: "no"
+    networks:
+      - inveniamio_default
+    volumes:
+      - $HOME/.aws:/home/inveniam/.aws:ro
+    environment:
+      # Agent
+      AGENT_ID: react_demo_agent
+      LOG_LEVEL: INFO
+      LOG_JSON_FORMAT: "False"
+
+      # LLM
+      LLM_MODEL: gpt-5
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_API_BASE: ${LLM_API_BASE:-}
+      MAX_ITERATIONS: 5
+      WORKFLOW_MODE: local
+
+      # M2M
+      M2M_CLIENT_ID: "6c7b77ad-bccf-48de-ba8e-d67dbc96ebac"
+      M2M_CLIENT_SECRET: "W9mWErSpm0dTWPoiHN-v4KiM2VUcnGV71MAplg55Fzw"
+      M2M_AIA_APP_ID: "bfc7c74c-e94c-446a-8605-ad54ddd9ba57"
+      AUTH_URL: "https://inveniam-dev.fusionauth.io/oauth2/token"
+      SSO_URL: "http://inv-iam-ms:8904/iam/sso/token"
+      ORG_LOGIN_URL: "http://inv-iam-ms:8904/iam/organisation/login"
+      FDR_API_URL: "http://inv-data-room-ms:3000"
+
+      # Vault (optional for local dev)
+      VAULT_ROLE: ${VAULT_ROLE:-ashesh.karan}
+      VAULT_ENDPOINT: "https://vault-dev.inveniam.io"
+      AWS_REGION: "us-east-1"
+      AWS_COMMON_REGION: "us-east-1"
+      DATA_LAB_CREDENTIALS_PATH: "vault://inveniam-dev-dataroom/artifact-store"
+      VAULT_ROLE_FOR_EXTRACTION: ${VAULT_ROLE_FOR_EXTRACTION:-${VAULT_ROLE:-ashesh.karan}}
+      VAULT_AUTH_METHOD: "AWS"
+
+      # Retry
+      RETRY_MAX_ATTEMPTS: 3
+      RETRY_MIN_WAIT_SECONDS: 1
+      RETRY_MAX_WAIT_SECONDS: 30
+
+      DB_HOST: "inv-db"
+      DB_PORT: "5432"
+      DB_USER: "invuser"
+      DB_PASSWORD: "123456"
+      DB_NAME: "invai"
+
+      #
+      ORGANISATION_ID: "e8bbe6ff-877e-4103-bcb5-8514b5db7f5a"
+      OPENWEATHERMAP_API_KEY: "97bff56d53d0d39ccb32c243ced2ba16"
+networks:
+  inveniamio_default:
+    external: true
+    name: inveniamio_default

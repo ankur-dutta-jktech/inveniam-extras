@@ -1,0 +1,1 @@
+{"nodes": [{"id": "apps_deals_service_scripts_migrate_deals_to_mongodb_env_config_js", "label": "env-config.js", "file_type": "code", "source_file": "apps/deals-service/scripts/migrate-deals-to-mongodb/env-config.js", "source_location": "L1"}], "edges": []}

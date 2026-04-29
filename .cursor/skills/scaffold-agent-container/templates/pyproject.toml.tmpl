@@ -1,0 +1,40 @@
+[project]
+name = "__CONTAINER_NAME__"
+version = "0.1.0"
+description = "__AGENT_CLASS__ agent container"
+readme = "README.md"
+requires-python = "==3.10.12"
+dependencies = [
+    "pydantic>=2.0.0",
+    "agent-core",
+    "shared-interfaces",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv.sources]
+agent-core = { path = "../../../../shared-packages/agent-core/v1.0.0" }
+shared-interfaces = { path = "../../../../shared-packages/shared-interfaces/v1.0.0" }
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "isort",
+    "pylint",
+    "pytest>=9.0.1",
+    "pytest-asyncio>=0.23.5",
+    "pytest-cov>=7.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+pythonpath = [".", "src"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]

@@ -1,0 +1,33 @@
+# __CONTAINER_NAME__
+
+Containerized agent built on the Reusable Agent Framework.
+
+## Architecture
+
+This container follows the layered architecture described in the confluence
+"Reusable Agent Components - Foundation":
+
+- `src/domain/` — Layer 1: agent-specific entities and execution state
+- `src/application/` — Layer 2: workflow nodes, tools, callbacks
+- `src/composition/` — Layer 5: composition root that wires dependencies
+- `src/services/` — LLM and vault clients (thin wrappers over shared packages)
+- `src/config/` — agent configuration (populated by `setup-agent-infra`)
+- `src/database/` — MongoDB adapters (populated by `setup-agent-infra`)
+- `src/vectorstore/` — Weaviate adapters (populated by `setup-agent-infra`)
+- `src/utils/` — global state + helpers (populated by `setup-agent-infra`)
+- `src/models/` — DTOs: `ExecutionRequest`, `ExecutionResult`
+- `src/exceptions/` — custom exception hierarchy per confluence error-handling strategy
+
+## Development
+
+```sh
+make install
+make format
+make lint
+```
+
+## Running
+
+```sh
+python src/main.py
+```

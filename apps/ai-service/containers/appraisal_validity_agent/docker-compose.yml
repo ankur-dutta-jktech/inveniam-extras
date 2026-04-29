@@ -1,0 +1,138 @@
+services:
+  appraisal-validity-agent:
+    build:
+      context: ../../../../  # monorepo root (shared-packages live here)
+      dockerfile: apps/ai-service/containers/appraisal_validity_agent/Dockerfile
+    image: appraisal-validity-agent:latest
+    container_name: appraisal-validity-agent
+    restart: "no"
+    networks:
+      - inveniamio_default
+    volumes:
+      - $HOME/.aws:/home/inveniam/.aws:ro
+    ports:
+      - "${DEBUGPY_PORT:-5678}:${DEBUGPY_PORT:-5678}"
+    environment:
+      # --- Logging (not part of Config; consumed by inveniam_logger / runtime) ---
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+      LOG_JSON_FORMAT: "${LOG_JSON_FORMAT:-False}"
+
+      # --- Optional debugging ---
+      DEBUGPY_ENABLE: "${DEBUGPY_ENABLE:-true}"
+      DEBUGPY_HOST: "${DEBUGPY_HOST:-0.0.0.0}"
+      DEBUGPY_PORT: "${DEBUGPY_PORT:-5678}"
+      DEBUGPY_WAIT_FOR_CLIENT: "${DEBUGPY_WAIT_FOR_CLIENT:-true}"
+
+      # --- auth: AuthConfig ---
+      M2M_AIA_APP_ID: "${M2M_AIA_APP_ID:-bfc7c74c-e94c-446a-8605-ad54ddd9ba57}"
+      M2M_CLIENT_ID: "${M2M_CLIENT_ID:-6c7b77ad-bccf-48de-ba8e-d67dbc96ebac}"
+      M2M_CLIENT_SECRET: "${M2M_CLIENT_SECRET:-W9mWErSpm0dTWPoiHN-v4KiM2VUcnGV71MAplg55Fzw}"
+      AUTH_URL: "${AUTH_URL:-https://inveniam-dev.fusionauth.io/oauth2/token}"
+      SSO_URL: "${SSO_URL:-http://inv-iam-ms:8904/iam/sso/token}"
+      ORG_LOGIN_URL: "${ORG_LOGIN_URL:-http://inv-iam-ms:8904/iam/organisation/login}"
+      FDR_API_URL: "${FDR_API_URL:-http://inv-data-room-ms:3000}"
+
+      # --- organization: OrganizationConfig ---
+      ORGANISATION_ID: "${ORGANISATION_ID:-e8bbe6ff-877e-4103-bcb5-8514b5db7f5a}"
+      USER_ID: "${USER_ID:-}"
+      JOB_ID: "${JOB_ID:-}"
+      DOCUMENT_ID: "${DOCUMENT_ID:-7a76550c-d7c0-4d06-81c8-a65a2057fd91}"
+      DOCUMENT_VERSION: "${DOCUMENT_VERSION:-1}"
+      WEAVIATE_COLLECTION_PREFIX: "${WEAVIATE_COLLECTION_PREFIX:-Dev}"
+      WEAVIATE_CHUNKS_COLLECTION: "${WEAVIATE_CHUNKS_COLLECTION:-FileChunks}"
+
+      # --- aws: AWSConfig ---
+      AWS_REGION: "${AWS_REGION:-us-east-1}"
+      AWS_COMMON_REGION: "${AWS_COMMON_REGION:-us-east-1}"
+      CLOUD_PROVIDER: "${CLOUD_PROVIDER:-AWS}"
+
+      # --- vault: VaultConfig ---
+      VAULT_AWS_IAM_REQUEST_URL: "${VAULT_AWS_IAM_REQUEST_URL:-https://sts.us-east-1.amazonaws.com}"
+      VAULT_ROLE: "${VAULT_ROLE:-ashesh.karan}"
+      VAULT_ENDPOINT: "${VAULT_ENDPOINT:-https://vault-dev.inveniam.io}"
+      VAULT_KV: "${VAULT_KV:-inveniam-dev-ai}"
+      VAULT_AUTH_METHOD: "${VAULT_AUTH_METHOD:-AWS}"
+      VAULT_ROLE_FOR_EXTRACTION: "${VAULT_ROLE_FOR_EXTRACTION:-${VAULT_ROLE:-ashesh.karan}}"
+
+      # --- database: DatabaseConfig ---
+      DB_HOST: "${DB_HOST:-inv-db}"
+      DB_PORT: "${DB_PORT:-5432}"
+      DB_USER: "${DB_USER:-invuser}"
+      DB_PASSWORD: "${DB_PASSWORD:-123456}"
+      DB_NAME: "${DB_NAME:-invai}"
+      DB_SSL_MODE: "${DB_SSL_MODE:-}"
+      MONGO_MAX_CONNECTIONS: "${MONGO_MAX_CONNECTIONS:-3}"
+      # Local-dev only: overrides the database name resolved from Vault credentials.
+      # Useful when Vault points at a stale/wrong DB (e.g. `dataartifacts` vs
+      # `dataartefacts`). Leave unset in production.
+      MONGO_DATABASE_OVERRIDE: "${MONGO_DATABASE_OVERRIDE:-dataartifacts}"
+
+      # --- messaging: MessagingConfig ---
+      BROKER_TYPE: "${BROKER_TYPE:-rabbitmq}"
+      QUEUE_EXCHANGE_NAME: "${QUEUE_EXCHANGE_NAME:-dev-exchange}"
+      QUEUE_ENDPOINT: "${QUEUE_ENDPOINT:-amqp://inv-rabbitmq}"
+      SNS_TOPIC_ARN: "${SNS_TOPIC_ARN:-}"
+      AZ_SERVICE_BUS_NAMESPACE: "${AZ_SERVICE_BUS_NAMESPACE:-}"
+      AZ_TOPIC_NAME: "${AZ_TOPIC_NAME:-}"
+
+      # --- retry: RetryConfig ---
+      RETRY_MAX_ATTEMPTS: "${RETRY_MAX_ATTEMPTS:-3}"
+      RETRY_MIN_WAIT_SECONDS: "${RETRY_MIN_WAIT_SECONDS:-1}"
+      RETRY_MAX_WAIT_SECONDS: "${RETRY_MAX_WAIT_SECONDS:-10}"
+      RETRY_MULTIPLIER: "${RETRY_MULTIPLIER:-2.0}"
+
+      # --- batch: BatchConfig ---
+      BATCH_SIZE: "${BATCH_SIZE:-20}"
+      BATCH_MAX_WORKERS: "${BATCH_MAX_WORKERS:-8}"
+      BATCH_MAX_RETRIES: "${BATCH_MAX_RETRIES:-3}"
+      BATCH_RETRY_DELAY: "${BATCH_RETRY_DELAY:-1.0}"
+      BATCH_TIMEOUT_SECONDS: "${BATCH_TIMEOUT_SECONDS:-300}"
+
+      # --- agent: AgentConfig ---
+      AGENT_ID: "${AGENT_ID:-appraisal_validity_agent}"
+      AGENT_REQUEST_ID: "${AGENT_REQUEST_ID:-}"
+
+      # --- org_llm: OrgLLMProviderConfig ---
+      ORG_LLM_PROVIDER: "${ORG_LLM_PROVIDER:-Inveniam}"
+      ORG_LLM_PROVIDER_SUBTYPE: "${ORG_LLM_PROVIDER_SUBTYPE:-}"
+
+      # --- llm: LLMConfig (PA / KYC-aligned keys + agent_llm_services fallbacks) ---
+      DATA_LAB_CREDENTIALS_PATH: "${DATA_LAB_CREDENTIALS_PATH:-vault://inveniam-dev-dataroom/artifact-store}"
+      OPENAI_COMPLETION_MODEL: "${OPENAI_COMPLETION_MODEL:-gpt-4o}"
+      AGENT_OPENAI_COMPLETION_MODEL: "${AGENT_OPENAI_COMPLETION_MODEL:-gpt-4.1}"
+      ANTHROPIC_COMPLETION_MODEL: "${ANTHROPIC_COMPLETION_MODEL:-anthropic/claude-sonnet-4-20250514}"
+      BEDROCK_LLM_MODEL_ID: "${BEDROCK_LLM_MODEL_ID:-us.anthropic.claude-sonnet-4-20250514-v1:0}"
+      BEDROCK_REGION: "${BEDROCK_REGION:-us-east-1}"
+      BEDROCK_LLM_MODEL_PROVIDER: "${BEDROCK_LLM_MODEL_PROVIDER:-bedrock}"
+      BEDROCK_LLM_MODEL_MAX_TOKENS: "${BEDROCK_LLM_MODEL_MAX_TOKENS:-8192}"
+      BEDROCK_EMBEDDING_MODEL: "${BEDROCK_EMBEDDING_MODEL:-amazon.titan-embed-text-v2:0}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID:-}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY:-}"
+      AWS_SESSION_TOKEN: "${AWS_SESSION_TOKEN:-}"
+      AWS_USE_SESSION_CREDENTIALS: "${AWS_USE_SESSION_CREDENTIALS:-false}"
+      OPENAI_EMBEDDING_MODEL: "${OPENAI_EMBEDDING_MODEL:-text-embedding-3-large}"
+      INVENIAM_LLM_SOURCE: "${INVENIAM_LLM_SOURCE:-OPENAI_G42}"
+      INVENIAM_EXTRACTION_OPENAI_API_KEY: "${INVENIAM_EXTRACTION_OPENAI_API_KEY:-vault://development/llm/openai/extraction/INVENIAM_EXTRACTION_OPENAI_API_KEY}"
+      INVENIAM_EXTRACTION_OPENAI_TYPE: "${INVENIAM_EXTRACTION_OPENAI_TYPE:-}"
+      INVENIAM_EXTRACTION_OPENAI_BASE_URL: "${INVENIAM_EXTRACTION_OPENAI_BASE_URL:-vault://development/llm/openai/extraction/INVENIAM_EXTRACTION_OPENAI_BASE_URL}"
+      INVENIAM_OPENAI_API_KEY: "${INVENIAM_OPENAI_API_KEY:-}"
+      INVENIAM_OPENAI_TYPE: "${INVENIAM_OPENAI_TYPE:-}"
+      INVENIAM_G42_BASE_URL: "${INVENIAM_G42_BASE_URL:-vault://development/llm/openai/embedding/INVENIAM_G42_BASE_URL}"
+      ANTHROPIC_G42_COMPLETION_MODEL: "${ANTHROPIC_G42_COMPLETION_MODEL:-openai/claude-sonnet-4}"
+      INVENIAM_EXTRACTION_ANTHROPIC_API_KEY: "${INVENIAM_EXTRACTION_ANTHROPIC_API_KEY:-}"
+      INVENIAM_EXTRACTION_ANTHROPIC_BASE_URL: "${INVENIAM_EXTRACTION_ANTHROPIC_BASE_URL:-}"
+      OPENAI_MODEL_REASONING_EFFORT: "${OPENAI_MODEL_REASONING_EFFORT:-}"
+      LLM_API_KEY: "${LLM_API_KEY:-${OPENAI_API_KEY:-}}"
+      LLM_API_BASE: "${LLM_API_BASE:-}"
+      LLM_TEMPERATURE: "${LLM_TEMPERATURE:-0.0}"
+      LLM_TOP_P: "${LLM_TOP_P:-0.0}"
+
+      # --- Optional workflow (not read by config_manager today) ---
+      LLM_MODEL: "${LLM_MODEL:-gpt-5}"
+      MAX_ITERATIONS: "${MAX_ITERATIONS:-5}"
+      WORKFLOW_MODE: "${WORKFLOW_MODE:-local}"
+
+networks:
+  inveniamio_default:
+    external: true
+    name: inveniamio_default

@@ -1,0 +1,19 @@
+.PHONY: format lint check install validate-pr
+
+install:
+	uv lock --upgrade-package black --upgrade-package isort --upgrade-package pylint
+	uv sync --extra dev
+
+format:
+	black ./src --line-length 120
+	isort ./src --profile black -l 120 --float-to-top
+
+lint:
+	pylint ./src/**/*.py --max-line-length 120 -v --disable=all --enable=E,F
+
+validate-pr:
+	black ./src --line-length 120 --check
+	isort ./src --profile black -l 120 --float-to-top --check-only
+	pylint ./src/**/*.py --max-line-length 120 -v --exit-zero --persistent=no --disable=all --enable=E,F
+
+check: install format lint
